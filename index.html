@@ -1,0 +1,662 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lumina — Your Personal Media Library</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --ink: #0a0a0f;
+    --ink2: #1c1c28;
+    --fog: #f4f3ef;
+    --fog2: #eceae4;
+    --blue: #1a6cff;
+    --blue-dim: #e8f0ff;
+    --red: #e8432d;
+    --green: #1a9c5b;
+    --amber: #d97b1a;
+    --purple: #6e3dd6;
+    --serif: 'DM Serif Display', Georgia, serif;
+    --sans: 'DM Sans', sans-serif;
+    --mono: 'DM Mono', monospace;
+  }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: var(--sans);
+    background: var(--fog);
+    color: var(--ink);
+    overflow-x: hidden;
+    font-size: 17px;
+    line-height: 1.65;
+  }
+
+  /* ── NAV ── */
+  nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 18px 48px;
+    background: rgba(244,243,239,0.88);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid rgba(10,10,15,0.08);
+  }
+  .nav-logo {
+    font-family: var(--serif);
+    font-size: 22px;
+    letter-spacing: 0.02em;
+    color: var(--ink);
+    text-decoration: none;
+  }
+  .nav-logo span { color: var(--blue); }
+  .nav-links { display: flex; gap: 36px; }
+  .nav-links a {
+    font-size: 14px; font-weight: 500; letter-spacing: 0.04em;
+    text-decoration: none; color: var(--ink); opacity: 0.6;
+    transition: opacity 0.2s;
+  }
+  .nav-links a:hover { opacity: 1; }
+  .nav-cta {
+    background: var(--ink); color: var(--fog) !important;
+    opacity: 1 !important; padding: 9px 22px; border-radius: 6px;
+    font-size: 14px !important; font-weight: 500 !important;
+    transition: background 0.2s !important;
+  }
+  .nav-cta:hover { background: var(--blue) !important; }
+
+  /* ── HERO ── */
+  .hero {
+    min-height: 100vh;
+    display: grid; grid-template-columns: 1fr 1fr;
+    align-items: center; gap: 80px;
+    padding: 120px 80px 80px;
+    max-width: 1280px; margin: 0 auto;
+  }
+  .hero-eyebrow {
+    font-family: var(--mono); font-size: 12px; font-weight: 500;
+    letter-spacing: 0.14em; text-transform: uppercase;
+    color: var(--blue); margin-bottom: 24px;
+    display: flex; align-items: center; gap: 10px;
+  }
+  .hero-eyebrow::before {
+    content: ''; display: block; width: 28px; height: 1.5px; background: var(--blue);
+  }
+  h1 {
+    font-family: var(--serif); font-size: clamp(48px, 5.5vw, 76px);
+    line-height: 1.08; letter-spacing: -0.02em; color: var(--ink);
+    margin-bottom: 28px;
+  }
+  h1 em { font-style: italic; color: var(--blue); }
+  .hero-desc {
+    font-size: 18px; line-height: 1.7; color: rgba(10,10,15,0.62);
+    max-width: 480px; margin-bottom: 44px; font-weight: 300;
+  }
+  .hero-buttons { display: flex; gap: 14px; flex-wrap: wrap; }
+  .btn-primary {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: var(--ink); color: var(--fog);
+    padding: 14px 28px; border-radius: 8px; font-size: 15px;
+    font-weight: 500; text-decoration: none; letter-spacing: 0.01em;
+    transition: all 0.2s; border: 1.5px solid var(--ink);
+  }
+  .btn-primary:hover { background: var(--blue); border-color: var(--blue); transform: translateY(-1px); }
+  .btn-secondary {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: transparent; color: var(--ink);
+    padding: 14px 28px; border-radius: 8px; font-size: 15px;
+    font-weight: 500; text-decoration: none; letter-spacing: 0.01em;
+    border: 1.5px solid rgba(10,10,15,0.2); transition: all 0.2s;
+  }
+  .btn-secondary:hover { border-color: var(--ink); transform: translateY(-1px); }
+  .hero-meta {
+    margin-top: 24px; font-size: 13px; color: rgba(10,10,15,0.4);
+    font-weight: 400; display: flex; align-items: center; gap: 6px;
+  }
+  .hero-meta span { color: var(--ink); font-weight: 500; }
+
+  /* Hero visual */
+  .hero-visual {
+    position: relative;
+  }
+  .app-mockup {
+    background: var(--ink2);
+    border-radius: 16px;
+    overflow: hidden;
+    border: 1px solid rgba(255,255,255,0.06);
+    box-shadow: 0 40px 80px rgba(10,10,15,0.25), 0 0 0 1px rgba(10,10,15,0.1);
+    aspect-ratio: 4/3;
+    position: relative;
+    transform: perspective(1000px) rotateY(-4deg) rotateX(2deg);
+  }
+  .mockup-bar {
+    background: rgba(255,255,255,0.05);
+    height: 36px; display: flex; align-items: center; padding: 0 16px; gap: 7px;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+  }
+  .dot { width: 11px; height: 11px; border-radius: 50%; }
+  .dot.r { background: #ff5f57; }
+  .dot.y { background: #febc2e; }
+  .dot.g { background: #28c840; }
+  .mockup-body { display: flex; height: calc(100% - 36px); }
+  .mockup-sidebar {
+    width: 140px; background: rgba(255,255,255,0.03);
+    border-right: 1px solid rgba(255,255,255,0.04);
+    padding: 16px 0;
+  }
+  .sidebar-section { padding: 0 12px 12px; }
+  .sidebar-label {
+    font-family: var(--mono); font-size: 8px; letter-spacing: 0.1em;
+    text-transform: uppercase; color: rgba(255,255,255,0.25); margin-bottom: 6px; padding: 0 4px;
+  }
+  .sidebar-item {
+    display: flex; align-items: center; gap: 8px;
+    padding: 6px 8px; border-radius: 5px; margin-bottom: 2px;
+    font-size: 10px; color: rgba(255,255,255,0.45); cursor: pointer;
+  }
+  .sidebar-item.active { background: rgba(26,108,255,0.2); color: rgba(255,255,255,0.85); }
+  .sidebar-dot { width: 7px; height: 7px; border-radius: 50%; }
+  .mockup-grid {
+    flex: 1; padding: 12px; display: grid;
+    grid-template-columns: repeat(3, 1fr); gap: 7px; align-content: start;
+  }
+  .grid-thumb {
+    aspect-ratio: 1; border-radius: 6px; position: relative; overflow: hidden;
+  }
+  .gt-photo { background: linear-gradient(135deg, #2d4a6e, #1a6cff22); }
+  .gt-video { background: linear-gradient(135deg, #4a2d2d, #e8432d22); }
+  .gt-audio { background: linear-gradient(135deg, #2d4a3a, #1a9c5b22); }
+  .gt-selected { box-shadow: 0 0 0 2px #1a6cff; }
+  .gt-label {
+    position: absolute; bottom: 4px; left: 4px;
+    background: rgba(0,0,0,0.6); border-radius: 3px;
+    font-size: 7px; font-family: var(--mono);
+    color: rgba(255,255,255,0.7); padding: 2px 4px;
+  }
+
+  /* ── STATS ── */
+  .stats {
+    background: var(--ink); color: var(--fog);
+    padding: 60px 80px;
+  }
+  .stats-inner {
+    max-width: 1280px; margin: 0 auto;
+    display: grid; grid-template-columns: repeat(4,1fr); gap: 40px;
+  }
+  .stat-item { border-left: 2px solid rgba(255,255,255,0.1); padding-left: 24px; }
+  .stat-num {
+    font-family: var(--serif); font-size: 42px; line-height: 1;
+    color: #fff; margin-bottom: 8px;
+  }
+  .stat-num span { color: var(--blue); }
+  .stat-label { font-size: 13px; color: rgba(255,255,255,0.4); font-weight: 300; }
+
+  /* ── FEATURES ── */
+  .features { padding: 120px 80px; max-width: 1280px; margin: 0 auto; }
+  .section-header { margin-bottom: 72px; }
+  .section-eyebrow {
+    font-family: var(--mono); font-size: 11px; letter-spacing: 0.14em;
+    text-transform: uppercase; color: var(--blue); margin-bottom: 16px;
+    display: flex; align-items: center; gap: 10px;
+  }
+  .section-eyebrow::before { content:''; width:20px; height:1.5px; background:var(--blue); }
+  h2 {
+    font-family: var(--serif); font-size: clamp(36px, 3.5vw, 52px);
+    line-height: 1.1; letter-spacing: -0.02em; max-width: 560px;
+  }
+  h2 em { font-style: italic; color: var(--blue); }
+
+  .feature-grid {
+    display: grid; grid-template-columns: repeat(3,1fr); gap: 2px;
+    background: rgba(10,10,15,0.08); border-radius: 16px; overflow: hidden;
+  }
+  .feature-card {
+    background: var(--fog); padding: 40px 36px;
+    transition: background 0.2s;
+  }
+  .feature-card:hover { background: #fff; }
+  .feature-card.wide { grid-column: span 2; }
+  .feature-icon {
+    width: 44px; height: 44px; border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 20px; margin-bottom: 20px;
+  }
+  .fi-blue { background: var(--blue-dim); }
+  .fi-red { background: #fdecea; }
+  .fi-green { background: #e8f7f0; }
+  .fi-purple { background: #f0ebfc; }
+  .fi-amber { background: #fdf3e7; }
+  .feature-card h3 {
+    font-family: var(--serif); font-size: 22px; margin-bottom: 10px; line-height: 1.2;
+  }
+  .feature-card p {
+    font-size: 15px; line-height: 1.65; color: rgba(10,10,15,0.55); font-weight: 300;
+  }
+  .feature-tag {
+    display: inline-block; margin-top: 14px; font-family: var(--mono);
+    font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase;
+    padding: 4px 10px; border-radius: 4px; font-weight: 500;
+  }
+  .tag-blue { background: var(--blue-dim); color: var(--blue); }
+  .tag-green { background: #e8f7f0; color: var(--green); }
+  .tag-red { background: #fdecea; color: var(--red); }
+  .tag-purple { background: #f0ebfc; color: var(--purple); }
+
+  /* ── CODEC SECTION ── */
+  .codec-section {
+    background: var(--fog2); border-top: 1px solid rgba(10,10,15,0.07);
+    border-bottom: 1px solid rgba(10,10,15,0.07); padding: 100px 80px;
+  }
+  .codec-inner { max-width: 1280px; margin: 0 auto; display: grid; grid-template-columns: 1fr 1fr; gap: 100px; align-items: center; }
+  .codec-badges {
+    display: flex; flex-wrap: wrap; gap: 10px;
+  }
+  .badge {
+    font-family: var(--mono); font-size: 12px; font-weight: 500;
+    padding: 7px 14px; border-radius: 6px; letter-spacing: 0.04em;
+    border: 1.5px solid; transition: all 0.2s;
+  }
+  .badge-dark { background: var(--ink); color: var(--fog); border-color: var(--ink); }
+  .badge-outline { background: transparent; color: var(--ink); border-color: rgba(10,10,15,0.2); }
+  .badge:hover { transform: translateY(-2px); }
+  .codec-note {
+    margin-top: 28px; padding: 16px 20px;
+    background: rgba(26,108,255,0.07); border-left: 3px solid var(--blue);
+    border-radius: 0 8px 8px 0; font-size: 14px; color: rgba(10,10,15,0.65);
+  }
+  .codec-note strong { color: var(--ink); font-weight: 500; }
+
+  /* ── LICENSE ── */
+  .license-section { padding: 100px 80px; max-width: 1280px; margin: 0 auto; }
+  .license-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 48px; margin-top: 56px; }
+  .license-card {
+    padding: 36px; border-radius: 12px;
+    border: 1.5px solid rgba(10,10,15,0.1);
+    transition: border-color 0.2s, transform 0.2s;
+  }
+  .license-card:hover { border-color: var(--blue); transform: translateY(-2px); }
+  .license-card h3 { font-family: var(--serif); font-size: 24px; margin-bottom: 12px; }
+  .license-card p { font-size: 15px; color: rgba(10,10,15,0.55); font-weight: 300; line-height: 1.7; }
+  .license-card .badge { margin-top: 20px; }
+  .ffmpeg-box {
+    grid-column: span 2;
+    background: var(--ink); color: var(--fog);
+    padding: 40px; border-radius: 12px;
+    display: grid; grid-template-columns: 1fr auto; gap: 40px; align-items: center;
+  }
+  .ffmpeg-box h3 { font-family: var(--serif); font-size: 26px; margin-bottom: 10px; color: #fff; }
+  .ffmpeg-box p { font-size: 15px; color: rgba(255,255,255,0.5); font-weight: 300; line-height: 1.7; max-width: 560px; }
+  .ffmpeg-links { display: flex; flex-direction: column; gap: 10px; min-width: 180px; }
+  .ffmpeg-link {
+    display: flex; align-items: center; gap: 8px;
+    font-size: 13px; color: rgba(255,255,255,0.55);
+    text-decoration: none; transition: color 0.2s; font-weight: 300;
+  }
+  .ffmpeg-link:hover { color: #fff; }
+  .ffmpeg-link::before { content: '→'; color: var(--blue); font-weight: 500; }
+
+  /* ── INSTALL ── */
+  .install-section {
+    background: var(--ink); padding: 100px 80px;
+  }
+  .install-inner { max-width: 1280px; margin: 0 auto; }
+  .install-inner .section-eyebrow { color: rgba(255,255,255,0.4); }
+  .install-inner .section-eyebrow::before { background: rgba(255,255,255,0.4); }
+  .install-inner h2 { color: #fff; }
+  .install-steps {
+    display: grid; grid-template-columns: repeat(3,1fr); gap: 2px;
+    background: rgba(255,255,255,0.05); border-radius: 16px; overflow: hidden;
+    margin-top: 56px;
+  }
+  .install-step {
+    background: var(--ink2); padding: 36px;
+  }
+  .step-num {
+    font-family: var(--mono); font-size: 11px; letter-spacing: 0.1em;
+    color: var(--blue); margin-bottom: 16px; font-weight: 500;
+  }
+  .install-step h3 { font-family: var(--serif); font-size: 20px; color: #fff; margin-bottom: 10px; }
+  .install-step p { font-size: 14px; color: rgba(255,255,255,0.4); line-height: 1.65; font-weight: 300; }
+  .code-block {
+    margin-top: 14px; background: rgba(0,0,0,0.4);
+    border-radius: 6px; padding: 10px 14px;
+    font-family: var(--mono); font-size: 12px;
+    color: #a8d8ff; letter-spacing: 0.02em;
+    border: 1px solid rgba(255,255,255,0.07);
+  }
+
+  /* ── FOOTER ── */
+  footer {
+    background: var(--ink2); border-top: 1px solid rgba(255,255,255,0.05);
+    padding: 56px 80px; color: rgba(255,255,255,0.35);
+  }
+  .footer-inner {
+    max-width: 1280px; margin: 0 auto;
+    display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 24px;
+  }
+  .footer-logo { font-family: var(--serif); font-size: 20px; color: rgba(255,255,255,0.6); }
+  .footer-logo span { color: var(--blue); }
+  .footer-links { display: flex; gap: 28px; }
+  .footer-links a {
+    font-size: 13px; color: rgba(255,255,255,0.35); text-decoration: none;
+    transition: color 0.2s;
+  }
+  .footer-links a:hover { color: rgba(255,255,255,0.7); }
+  .footer-copy { font-size: 13px; color: rgba(255,255,255,0.2); }
+  .footer-gpl {
+    width: 100%; padding-top: 28px;
+    border-top: 1px solid rgba(255,255,255,0.05);
+    font-size: 12px; color: rgba(255,255,255,0.2); line-height: 1.7; font-weight: 300;
+  }
+  .footer-gpl a { color: rgba(255,255,255,0.4); text-decoration: underline; }
+
+  /* ── ANIMATIONS ── */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(24px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  .fade-up { animation: fadeUp 0.7s ease both; }
+  .delay-1 { animation-delay: 0.1s; }
+  .delay-2 { animation-delay: 0.2s; }
+  .delay-3 { animation-delay: 0.3s; }
+  .delay-4 { animation-delay: 0.45s; }
+
+  @media (max-width: 900px) {
+    nav { padding: 16px 24px; }
+    .nav-links { display: none; }
+    .hero { grid-template-columns: 1fr; padding: 100px 24px 60px; gap: 48px; }
+    .stats { padding: 48px 24px; }
+    .stats-inner { grid-template-columns: repeat(2,1fr); }
+    .features, .codec-section, .license-section, .install-section { padding: 72px 24px; }
+    .feature-grid { grid-template-columns: 1fr; }
+    .feature-card.wide { grid-column: span 1; }
+    .codec-inner { grid-template-columns: 1fr; gap: 48px; }
+    .license-grid { grid-template-columns: 1fr; }
+    .ffmpeg-box { grid-column: span 1; grid-template-columns: 1fr; }
+    .install-steps { grid-template-columns: 1fr; }
+    footer { padding: 40px 24px; }
+    .footer-inner { flex-direction: column; }
+    h1 { font-size: 42px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <a href="#" class="nav-logo">Lumin<span>a</span></a>
+  <div class="nav-links">
+    <a href="#features">Features</a>
+    <a href="#codecs">Codecs</a>
+    <a href="#license">License</a>
+    <a href="#install">Install</a>
+    <a href="https://github.com/likhith1542/lumina" class="nav-cta">Download DMG ↓</a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section>
+  <div class="hero">
+    <div>
+      <p class="hero-eyebrow fade-up">macOS Media Library</p>
+      <h1 class="fade-up delay-1">Your media,<br><em>beautifully</em><br>organized.</h1>
+      <p class="hero-desc fade-up delay-2">
+        Photos, videos, and audio — all in one native macOS app. With built-in support for MKV, AVI, WMV and 30+ formats via bundled FFmpeg.
+      </p>
+      <div class="hero-buttons fade-up delay-3">
+        <a href="https://github.com/likhith1542/lumina/releases" class="btn-primary">
+          ↓ &nbsp;Download DMG
+        </a>
+        <a href="https://github.com/likhith1542/lumina" class="btn-secondary">
+          View on GitHub
+        </a>
+      </div>
+      <p class="hero-meta fade-up delay-4">
+        macOS <span>14.0+</span> · Free & Open Source · <span>No subscription</span>
+      </p>
+    </div>
+    <div class="hero-visual fade-up delay-2">
+      <div class="app-mockup">
+        <div class="mockup-bar">
+          <div class="dot r"></div>
+          <div class="dot y"></div>
+          <div class="dot g"></div>
+        </div>
+        <div class="mockup-body">
+          <div class="mockup-sidebar">
+            <div class="sidebar-section">
+              <div class="sidebar-label">Library</div>
+              <div class="sidebar-item"><div class="sidebar-dot" style="background:#4fc3f7"></div>Photos</div>
+              <div class="sidebar-item active"><div class="sidebar-dot" style="background:#ff6b6b"></div>Videos</div>
+              <div class="sidebar-item"><div class="sidebar-dot" style="background:#a29bfe"></div>Audio</div>
+            </div>
+            <div class="sidebar-section">
+              <div class="sidebar-label">Smart</div>
+              <div class="sidebar-item">♥ Favorites</div>
+              <div class="sidebar-item">⟳ Recent</div>
+            </div>
+          </div>
+          <div class="mockup-grid">
+            <div class="grid-thumb gt-photo gt-selected"><div class="gt-label">JPG</div></div>
+            <div class="grid-thumb gt-video"><div class="gt-label">MKV</div></div>
+            <div class="grid-thumb gt-photo"><div class="gt-label">RAW</div></div>
+            <div class="grid-thumb gt-audio"><div class="gt-label">FLAC</div></div>
+            <div class="grid-thumb gt-video"><div class="gt-label">AVI</div></div>
+            <div class="grid-thumb gt-photo"><div class="gt-label">HEIC</div></div>
+            <div class="grid-thumb gt-video"><div class="gt-label">WMV</div></div>
+            <div class="grid-thumb gt-audio"><div class="gt-label">MP3</div></div>
+            <div class="grid-thumb gt-photo"><div class="gt-label">PNG</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- STATS -->
+<section class="stats">
+  <div class="stats-inner">
+    <div class="stat-item">
+      <div class="stat-num">30<span>+</span></div>
+      <div class="stat-label">Supported file formats</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-num">10</div>
+      <div class="stat-label">Band parametric equalizer</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-num">0<span>mb</span></div>
+      <div class="stat-label">Extra installs required</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-num">∞</div>
+      <div class="stat-label">Library size, no limits</div>
+    </div>
+  </div>
+</section>
+
+<!-- FEATURES -->
+<section class="features" id="features">
+  <div class="section-header">
+    <p class="section-eyebrow">What's inside</p>
+    <h2>Everything you need,<br><em>nothing you don't.</em></h2>
+  </div>
+  <div class="feature-grid">
+    <div class="feature-card wide">
+      <div class="feature-icon fi-red">🎬</div>
+      <h3>Universal Video Playback</h3>
+      <p>Play MKV, AVI, WMV, FLV, WebM and more — formats macOS can't natively handle. Lumina bundles a static FFmpeg binary so everything works out of the box. No Homebrew, no extra installs, no configuration.</p>
+      <span class="feature-tag tag-red">Powered by FFmpeg</span>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon fi-blue">🖼️</div>
+      <h3>Photo Viewer</h3>
+      <p>Pan, zoom, and explore photos with smooth gestures. Supports RAW formats (NEF, CR2, ARW, DNG), HEIC, AVIF, WebP and all common formats.</p>
+      <span class="feature-tag tag-blue">30+ formats</span>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon fi-purple">🎵</div>
+      <h3>Audio Player & EQ</h3>
+      <p>Full-featured audio player with a 10-band parametric equalizer, real-time spectrum visualizer, queue management, shuffle, and loop modes.</p>
+      <span class="feature-tag tag-purple">±24 dB EQ</span>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon fi-green">💬</div>
+      <h3>Subtitle Support</h3>
+      <p>Load external SRT, ASS, and VTT subtitle files for any video. Subtitles are automatically extracted from MKV containers and rendered as a styled overlay. Position and resize on screen.</p>
+      <span class="feature-tag tag-green">SRT · ASS · VTT</span>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon fi-amber">🌐</div>
+      <h3>Multi-language Audio</h3>
+      <p>MKV files with multiple audio tracks show a language picker before playback. Pick Tamil, Telugu, Hindi, English — whatever you need. Each selection is separately cached for instant replay.</p>
+    </div>
+    <div class="feature-card wide">
+      <div class="feature-icon fi-blue">📁</div>
+      <h3>Smart Library Management</h3>
+      <p>Add folders and Lumina watches them automatically — new files appear instantly, deleted files disappear immediately. Sort by date modified, title, duration, file size, or play count. Grid and list views. Favorites, playlists, and Recently Played smart collections.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon fi-red">⌨️</div>
+      <h3>Keyboard-first</h3>
+      <p>Space to play/pause. Arrow keys to skip 10 seconds. Volume controls. Everything works from the keyboard without touching the mouse.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon fi-purple">🔒</div>
+      <h3>Fully Local & Private</h3>
+      <p>No cloud sync. No accounts. No analytics. Your media library lives entirely on your Mac in a local SQLite database. Nothing leaves your machine.</p>
+    </div>
+  </div>
+</section>
+
+<!-- CODEC SECTION -->
+<section class="codec-section" id="codecs">
+  <div class="codec-inner">
+    <div>
+      <p class="section-eyebrow">Format Support</p>
+      <h2>Every format,<br><em>handled.</em></h2>
+      <p style="margin-top:20px;font-size:16px;color:rgba(10,10,15,0.55);font-weight:300;line-height:1.7;max-width:440px;">
+        Lumina bundles a static FFmpeg binary for Apple Silicon and Intel. Unsupported files are remuxed in seconds using stream copy — no re-encoding, no quality loss.
+      </p>
+      <div class="codec-note" style="margin-top:28px;">
+        <strong>How it works:</strong> When you open an MKV, FFmpeg remuxes it to a QuickTime container in 5–10 seconds. The result is cached — reopen the same file instantly.
+      </div>
+    </div>
+    <div>
+      <div style="margin-bottom:20px;font-size:13px;font-weight:500;letter-spacing:0.06em;text-transform:uppercase;color:rgba(10,10,15,0.35);font-family:var(--mono)">Native (AVPlayer)</div>
+      <div class="codec-badges" style="margin-bottom:32px;">
+        <span class="badge badge-dark">MP4</span>
+        <span class="badge badge-dark">MOV</span>
+        <span class="badge badge-dark">M4V</span>
+        <span class="badge badge-dark">MP3</span>
+        <span class="badge badge-dark">AAC</span>
+        <span class="badge badge-dark">FLAC</span>
+        <span class="badge badge-dark">WAV</span>
+        <span class="badge badge-dark">HEIC</span>
+        <span class="badge badge-dark">JPEG</span>
+        <span class="badge badge-dark">PNG</span>
+        <span class="badge badge-dark">RAW</span>
+      </div>
+      <div style="margin-bottom:20px;font-size:13px;font-weight:500;letter-spacing:0.06em;text-transform:uppercase;color:rgba(10,10,15,0.35);font-family:var(--mono)">Via FFmpeg</div>
+      <div class="codec-badges">
+        <span class="badge badge-outline">MKV</span>
+        <span class="badge badge-outline">AVI</span>
+        <span class="badge badge-outline">WMV</span>
+        <span class="badge badge-outline">FLV</span>
+        <span class="badge badge-outline">WebM</span>
+        <span class="badge badge-outline">DivX</span>
+        <span class="badge badge-outline">VOB</span>
+        <span class="badge badge-outline">OGV</span>
+        <span class="badge badge-outline">RMVB</span>
+        <span class="badge badge-outline">ASF</span>
+        <span class="badge badge-outline">M2TS</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- LICENSE -->
+<section class="license-section" id="license">
+  <div class="section-header">
+    <p class="section-eyebrow">Open Source</p>
+    <h2>Free to use,<br><em>transparent</em> by design.</h2>
+  </div>
+  <div class="license-grid">
+    <div class="license-card">
+      <h3>Lumina</h3>
+      <p>Lumina itself is free software released under the MIT License. You are free to use, modify, and distribute it. Source code is available on GitHub.</p>
+      <span class="badge badge-outline" style="margin-top:16px;">MIT License</span>
+    </div>
+    <div class="license-card">
+      <h3>Why not App Store?</h3>
+      <p>Lumina bundles FFmpeg which is licensed under the GPL v2+. GPL software cannot be distributed through the Mac App Store. Lumina is distributed directly as a result.</p>
+      <span class="badge badge-outline" style="margin-top:16px;">Direct Distribution</span>
+    </div>
+    <div class="ffmpeg-box">
+      <div>
+        <h3>About FFmpeg</h3>
+        <p>Lumina bundles a statically compiled FFmpeg binary (arm64 + x86_64). FFmpeg is a free, open-source multimedia framework licensed under the GNU General Public License v2 (GPL v2). The bundled binary includes libx264, libx265, and other GPL-licensed codec libraries. By using Lumina, you acknowledge that FFmpeg is subject to the GPL v2 license.</p>
+      </div>
+      <div class="ffmpeg-links">
+        <a href="https://ffmpeg.org" class="ffmpeg-link">ffmpeg.org</a>
+        <a href="https://ffmpeg.org/legal.html" class="ffmpeg-link">FFmpeg license</a>
+        <a href="https://ffmpeg.martin-riedl.de" class="ffmpeg-link">Binary source</a>
+        <a href="https://www.gnu.org/licenses/gpl-2.0.html" class="ffmpeg-link">GPL v2 text</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- INSTALL -->
+<section class="install-section" id="install">
+  <div class="install-inner">
+    <p class="section-eyebrow">Get started</p>
+    <h2 style="color:#fff;">Up and running<br><em>in three steps.</em></h2>
+    <div class="install-steps">
+      <div class="install-step">
+        <div class="step-num">01 — Download</div>
+        <h3>Get Lumina</h3>
+        <p>Download the DMG from GitHub Releases. Open it and drag Lumina to your Applications folder — just like any Mac app.</p>
+        <div class="code-block">Lumina-1.0.0-macOS.dmg</div>
+      </div>
+      <div class="install-step">
+        <div class="step-num">02 — Install</div>
+        <h3>Open & allow</h3>
+        <p>Since Lumina is not notarized, macOS will ask for confirmation on first launch. Right-click the app and choose Open.</p>
+        <div class="code-block">Right-click → Open → Open anyway</div>
+      </div>
+      <div class="install-step">
+        <div class="step-num">03 — Add Media</div>
+        <h3>Import your library</h3>
+        <p>Click + in the toolbar to add a folder. Lumina scans it and watches for new files automatically. That's it.</p>
+        <div class="code-block">No extra setup required ✓</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-inner">
+    <div class="footer-logo">Lumin<span>a</span></div>
+    <div class="footer-links">
+      <a href="https://github.com/likhith1542/lumina">GitHub</a>
+      <a href="https://github.com/likhith1542/lumina/releases">Releases</a>
+      <a href="https://github.com/likhith1542/lumina/issues">Issues</a>
+      <a href="https://twitter.com/likhith1542">Twitter</a>
+    </div>
+    <div class="footer-copy">Built by likhith1542 · #30AppsIn30Days</div>
+  </div>
+  <div class="footer-gpl">
+    Lumina includes <a href="https://ffmpeg.org">FFmpeg</a>, licensed under the <a href="https://www.gnu.org/licenses/gpl-2.0.html">GNU GPL v2</a>.
+    FFmpeg source and build scripts are available at <a href="https://ffmpeg.martin-riedl.de">ffmpeg.martin-riedl.de</a>.
+    Lumina is not affiliated with the FFmpeg project.
+    Lumina itself is released under the <a href="https://opensource.org/licenses/MIT">MIT License</a>.
+  </div>
+</footer>
+
+</body>
+</html>

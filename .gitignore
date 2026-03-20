@@ -1,0 +1,66 @@
+# ── Xcode ──
+*.xcodeproj/xcuserdata/
+*.xcworkspace/xcuserdata/
+*.xcworkspace/xcshareddata/swiftpm/
+DerivedData/
+*.pbxuser
+*.mode1v3
+*.mode2v3
+*.perspectivev3
+!default.pbxuser
+!default.mode1v3
+!default.mode2v3
+!default.perspectivev3
+
+# ── Swift Package Manager ──
+.build/
+.swiftpm/
+*.resolved
+
+# ── macOS ──
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+Thumbs.db
+
+# ── Build output ──
+build/
+*.app
+*.dmg
+*.zip
+*.ipa
+*.dSYM
+*.dSYM.zip
+
+# ── Fastlane ──
+fastlane/report.xml
+fastlane/Preview.html
+fastlane/screenshots/**/*.png
+fastlane/test_output
+
+# ── CocoaPods (not used but just in case) ──
+Pods/
+*.xcworkspace
+
+
+
+# ── Secrets & env ──
+.env
+.env.local
+*.p12
+*.mobileprovision
+*.provisionprofile
+AuthKey_*.p8
+
+# ── Editor ──
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# ── Logs ──
+*.log
+npm-debug.log*
