@@ -1,0 +1,2 @@
+lumina/Resources/ffmpeg/ffmpeg_arm64 filter=lfs diff=lfs merge=lfs -text
+lumina/Resources/ffmpeg/ffmpeg_x86_64 filter=lfs diff=lfs merge=lfs -text
