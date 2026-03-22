@@ -16,6 +16,51 @@ struct ContentView: View {
         }
         .navigationSplitViewStyle(.balanced)
         .toolbar { ToolbarItems(vm: libraryVM) }
+        .onReceive(NotificationCenter.default.publisher(
+            for: Constants.Notification.openExternalFiles)
+        ) { notification in
+            guard let urls = notification.userInfo?["urls"] as? [URL],
+                  let url  = urls.first else { return }
+            openExternalFile(url: url)
+        }
+    }
+
+    private func openExternalFile(url: URL) {
+//        print("📂 openExternalFile: \(url.path)")
+        guard let type = MediaType.detect(from: url) else {
+//            print("📂 unknown media type for \(url.lastPathComponent)")
+            return
+        }
+
+        let sidebarItem: SidebarItem = switch type {
+            case .photo: .allPhotos
+            case .video: .allVideos
+            case .audio: .allAudio
+        }
+        libraryVM.sidebarItemChanged(sidebarItem)
+
+        Task { @MainActor in
+            // Wait for library fetch to complete
+            try? await Task.sleep(nanoseconds: 600_000_000)
+
+//            print("📂 library has \(libraryVM.items.count) items, looking for \(url.lastPathComponent)")
+
+            // Compare by path string — more reliable than URL equality
+            let item = libraryVM.items.first { $0.url.path == url.path }
+                ?? libraryVM.items.first { $0.url.lastPathComponent == url.lastPathComponent }
+
+            guard let item else {
+//                print("📂 item not found in library")
+                return
+            }
+
+//            print("📂 found item: \(item.title), opening")
+            libraryVM.select(item)
+            let sameType = libraryVM.items.filter { $0.mediaType == type }
+            let index    = sameType.firstIndex(where: { $0.id == item.id }) ?? 0
+            playback.loadQueue(sameType, startAt: index)
+            playback.currentItem = item
+        }
     }
 }
 

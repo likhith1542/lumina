@@ -50,6 +50,7 @@ final class VideoPlayerViewModel {
     private var timeObserver:        Any?
     private var itemObserver:        AnyCancellable?
     private var endObserver:         Any?
+    private var pauseObserver:       Any?
     private var cueTimer:            Timer?
     private var srtCues:             [SRTCue] = []
     private var isSeeking            = false
@@ -147,7 +148,6 @@ final class VideoPlayerViewModel {
             // Auto-load sidecar subtitle extracted during remux
             if let srtURL = FFmpegBridge.shared.sidecarSubtitleURL(for: tempURL, sourceURL: item.url) {
 //                print("🎬 Auto-loading sidecar subtitle: \(srtURL.lastPathComponent)")
-                // Small delay to let AVPlayer finish loading first
                 Task { @MainActor in
                     try? await Task.sleep(nanoseconds: 500_000_000)
                     self.loadExternalSubtitle(url: srtURL)
@@ -177,9 +177,9 @@ final class VideoPlayerViewModel {
         // Debug: log all tracks in the asset
 //        Task {
 //            if let tracks = try? await asset.load(.tracks) {
-//                print("🎵 Asset tracks (\(tracks.count) total):")
+////                print("🎵 Asset tracks (\(tracks.count) total):")
 //                for track in tracks {
-//                    print("🎵  - \(track.mediaType.rawValue)")
+////                    print("🎵  - \(track.mediaType.rawValue)")
 //                }
 //            }
 //        }
@@ -418,7 +418,9 @@ final class VideoPlayerViewModel {
         let (sub, aud) = await (subGroup, audGroup)
 
 //        print("🔊 AudioTracks: group=\(String(describing: aud)), options=\(aud?.options.count ?? 0)")
-//        aud?.options.forEach { print("🔊 Track: \($0.displayName) locale=\($0.locale?.identifier ?? "nil")") }
+//        aud?.options.forEach {
+//            print("🔊 Track: \($0.displayName) locale=\($0.locale?.identifier ?? "nil")")
+//        }
 
         await MainActor.run {
             if let sub, !sub.options.isEmpty {
@@ -515,16 +517,29 @@ final class VideoPlayerViewModel {
     }
 
     private func cleanup() {
-        if let obs = timeObserver { player?.removeTimeObserver(obs) }
-        if let obs = endObserver  { NotificationCenter.default.removeObserver(obs) }
+        if let obs = timeObserver  { player?.removeTimeObserver(obs) }
+        if let obs = endObserver   { NotificationCenter.default.removeObserver(obs) }
+        if let obs = pauseObserver { NotificationCenter.default.removeObserver(obs) }
         cueTimer?.invalidate()
         player?.pause()
-        player = nil; timeObserver = nil; endObserver = nil; itemObserver = nil
+        player = nil; timeObserver = nil; endObserver = nil; itemObserver = nil; pauseObserver = nil
         subtitleTracks = []; audioTracks = []
         selectedSubtitleTrack = nil; selectedAudioTrack = nil
         hasExternalSubtitle = false; externalSubtitleURL = nil
         srtCues = []; activeCue = nil
         isSeeking = false; pendingSeekTime = nil
+    }
+
+    /// Subscribe to window-close pause notification. Call once after init.
+    func subscribeToPauseNotification() {
+        guard pauseObserver == nil else { return }
+        pauseObserver = NotificationCenter.default.addObserver(
+            forName: Constants.Notification.pausePlayback,
+            object: nil, queue: .main
+        ) { [weak self] _ in
+            self?.player?.pause()
+            self?.isPlaying = false
+        }
     }
 
     deinit { cleanup() }

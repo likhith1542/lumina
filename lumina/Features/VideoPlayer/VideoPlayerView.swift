@@ -173,7 +173,7 @@ struct VideoPlayerView: View {
                 break
             }
         }
-        .onAppear   { vm.load(item: item); showControls = true }
+        .onAppear   { vm.load(item: item); vm.subscribeToPauseNotification(); showControls = true }
         .onDisappear {
             vm.savePosition(for: item.id)
             vm.pause()

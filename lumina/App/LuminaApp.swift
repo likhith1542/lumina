@@ -37,6 +37,14 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         NSApp.activate(ignoringOtherApps: true)
     }
 
+    func applicationShouldHandleReopen(_ sender: NSApplication, hasVisibleWindows flag: Bool) -> Bool {
+        if !flag {
+            mainWindowController?.showWindow(nil)
+            NSApp.activate(ignoringOtherApps: true)
+        }
+        return true
+    }
+
     func applicationShouldTerminateAfterLastWindowClosed(_ sender: NSApplication) -> Bool {
         false
     }
@@ -46,11 +54,44 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         FolderWatcher.shared.unwatchAll()
     }
 
-    // Handle files opened from Finder
+    // Pending URLs received before ContentView is ready
+    var pendingOpenURLs: [URL] = []
+
+    // Called by macOS for "Open With", drag onto dock, open -a
+    func application(_ application: NSApplication, open urls: [URL]) {
+//        print("📂 application(_:open:) called: \(urls.map(\.lastPathComponent))")
+        handleOpenURLs(urls)
+    }
+
+    // Legacy fallback
     func application(_ sender: NSApplication, openFiles filenames: [String]) {
+//        print("📂 openFiles called: \(filenames)")
         let urls = filenames.map { URL(fileURLWithPath: $0) }
-        Task {
+        handleOpenURLs(urls)
+        sender.reply(toOpenOrPrint: .success)
+    }
+
+    func application(_ sender: NSApplication, openFile filename: String) -> Bool {
+//        print("📂 openFile called: \(filename)")
+        handleOpenURLs([URL(fileURLWithPath: filename)])
+        return true
+    }
+
+    func handleOpenURLs(_ urls: [URL]) {
+        pendingOpenURLs = urls
+        mainWindowController?.showWindow(nil)
+        NSApp.activate(ignoringOtherApps: true)
+
+        Task { @MainActor in
             try? await ImportService.shared.importFiles(urls)
+            // Wait longer to ensure ContentView is listening and library is loaded
+            try? await Task.sleep(nanoseconds: 800_000_000)
+//            print("📂 posting openExternalFiles notification")
+            NotificationCenter.default.post(
+                name: Constants.Notification.openExternalFiles,
+                object: nil,
+                userInfo: ["urls": urls]
+            )
         }
     }
 
@@ -116,6 +157,7 @@ struct LuminaApp: App {
         Settings {
             SettingsView()
         }
+        .handlesExternalEvents(matching: ["*"])
     }
 }
 

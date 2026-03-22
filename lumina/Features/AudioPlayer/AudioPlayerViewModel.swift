@@ -24,6 +24,7 @@ final class AudioPlayerViewModel {
     private var saveTimer:   Timer? = nil
     private var cancellables = Set<AnyCancellable>()
     private var playback:    PlaybackState? = nil
+    private var pauseObserver: Any? = nil
 
     init() {
         engine.objectWillChange
@@ -38,6 +39,17 @@ final class AudioPlayerViewModel {
                 self.eqBands      = self.engine.eqBands
             }
             .store(in: &cancellables)
+
+        pauseObserver = NotificationCenter.default.addObserver(
+            forName: Constants.Notification.pausePlayback,
+            object: nil, queue: .main
+        ) { [weak self] _ in
+            self?.engine.pause()
+        }
+    }
+
+    deinit {
+        if let obs = pauseObserver { NotificationCenter.default.removeObserver(obs) }
     }
 
     // Called once from AudioPlayerView.onAppear

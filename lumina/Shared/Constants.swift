@@ -15,9 +15,9 @@ enum Constants {
 
     enum Playback {
         static let scrubThrottleInterval: TimeInterval = 0.1
-        static let timeObserverInterval: CMTimeValue   = 1    // 1/600 sec
-        static let resumeSaveInterval: TimeInterval    = 5.0  // save every 5s
-        static let skipInterval: TimeInterval          = 10.0 // ±10s skip
+        static let timeObserverInterval: Int64         = 1    // 1/600 sec (CMTimeValue)
+        static let resumeSaveInterval: TimeInterval    = 5.0
+        static let skipInterval: TimeInterval          = 10.0
     }
 
     enum Cache {
@@ -32,8 +32,10 @@ enum Constants {
     }
 
     enum Notification {
-        static let libraryDidChange  = Foundation.Notification.Name("LuminaLibraryDidChange")
-        static let playbackDidChange = Foundation.Notification.Name("LuminaPlaybackDidChange")
+        static let libraryDidChange           = Foundation.Notification.Name("LuminaLibraryDidChange")
+        static let playbackDidChange          = Foundation.Notification.Name("LuminaPlaybackDidChange")
         static let mediaItemsDeletedExternally = Foundation.Notification.Name("LuminaMediaItemsDeletedExternally")
+        static let openExternalFiles           = Foundation.Notification.Name("LuminaOpenExternalFiles")
+        static let pausePlayback               = Foundation.Notification.Name("LuminaPausePlayback")
     }
 }

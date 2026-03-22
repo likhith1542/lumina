@@ -28,9 +28,32 @@ final class MainWindowController: NSWindowController {
         window.setFrameAutosaveName("LuminaMain")
 
         super.init(window: window)
+        window.delegate = self
     }
 
     required init?(coder: NSCoder) { fatalError("Use init()") }
+}
+
+// MARK: - NSWindowDelegate
+
+extension MainWindowController: NSWindowDelegate {
+
+    /// Called when the user clicks the red close button (window hides, app stays alive)
+    func windowWillClose(_ notification: Notification) {
+        pauseAllPlayback()
+    }
+
+    /// Also pause when window is miniaturised to the Dock
+    func windowDidMiniaturize(_ notification: Notification) {
+        pauseAllPlayback()
+    }
+
+    private func pauseAllPlayback() {
+        // Pause AVPlayer (video)
+        NotificationCenter.default.post(name: Constants.Notification.pausePlayback, object: nil)
+        // Pause AVAudioEngine (audio)
+        AudioEngineService.shared.pause()
+    }
 }
 
 // MARK: - RootView
